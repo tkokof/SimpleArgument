@@ -22,4 +22,4 @@ public static void Main(string[] args)
 }
 ```
 
-details please see codes and there is a [blog(in chinese)]() about this library
+details please see codes and there is a [blog(in chinese)](https://blog.csdn.net/tkokof1/article/details/81037393) about this library
