@@ -40,6 +40,17 @@ namespace SimpleArgument
 			Console.WriteLine("Arg4 handler {0} {1} {2} {3}", p1, p2, p3, p4);
 		}
 		
+        static void OnArgParams1(int[] p1)
+        {
+            Console.WriteLine("ArgParams1 handler {0}", p1.Length);
+            for (int i = 0; i < p1.Length; ++i)
+            {
+                Console.Write(p1[i]);
+                Console.Write(" ");
+            }
+            Console.WriteLine();
+        }
+
 		public static void Main(string[] args)
 		{
 			/*
@@ -93,6 +104,7 @@ namespace SimpleArgument
 			sa.Add<int, string>("-a2", OnArg2);
 			sa.Add<float, float, float>("-a3", OnArg3);
 			sa.Add<string, int, float, double>("-a4", OnArg4);
+            sa.AddArray<int>("-ap1", OnArgParams1);
 			
 			try
 			{
@@ -105,7 +117,7 @@ namespace SimpleArgument
 			
 			try
 			{
-			    sa.Handle("-a0 -a1 123 -a2 345 test2\"test2\"test2 -a3 13.6 14.7 177 -a4 test1 222 333 444");
+                sa.Handle("-a0 -a1 123 -ap1 1 2 3 4 5 -a2 345 test2\"test2\"test2 -a3 13.6 14.7 177 -a4 test1 222 333 444");
 			}
 			catch (Exception exp)
 			{

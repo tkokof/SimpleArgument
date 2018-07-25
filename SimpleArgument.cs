@@ -70,7 +70,19 @@ namespace SimpleArgument
 				Debug.Print("[SimpleArgument]Add argument handler multi-times : " + name);
 			}
 		}
-		
+
+        public void AddArray<T1>(string name, Action<T1[]> handler)
+        {
+            if (!m_argHandlers.ContainsKey(name))
+            {
+                m_argHandlers.Add(name, new HandlerArray1<T1>(name, handler));
+            }
+            else
+            {
+                Debug.Print("[SimpleArgument]Add argument handler multi-times : " + name);
+            }
+        }
+
 		public void Remove(string name)
 		{
 			m_argHandlers.Remove(name);
@@ -87,9 +99,32 @@ namespace SimpleArgument
 					if (m_argHandlers.TryGetValue(arg, out handler))
 					{
 						var paramCount = handler.GetParamCount();
-						handler.DoHandler(args, parseStartIndex + 1, parseStartIndex + paramCount);
-						// move to next arg
-						parseStartIndex += (paramCount + 1);
+                        if (paramCount >= 0)
+                        {
+                            // normal param handler
+                            handler.DoHandler(args, parseStartIndex + 1, parseStartIndex + paramCount);
+                            // move to next arg
+                            parseStartIndex += (paramCount + 1);
+                        }
+                        else
+                        {
+                            // array param handler
+                            var paramStartIndex = parseStartIndex + 1;
+                            while (paramStartIndex >= 0 && paramStartIndex < args.Length)
+                            {
+                                var paramValue = args[paramStartIndex];
+                                if (m_argHandlers.ContainsKey(paramValue))
+                                {
+                                    // break if meet a arg
+                                    break;
+                                }
+                                ++paramStartIndex;
+                            }
+                            // do handler
+                            handler.DoHandler(args, parseStartIndex + 1, paramStartIndex - 1);
+                            // move to next arg
+                            parseStartIndex = paramStartIndex;
+                        }
 					}
 					else
 					{
@@ -235,14 +270,20 @@ namespace SimpleArgument
 			{
 			}
 			
-			protected bool ValidParam(string[] argParams, int startIndex, int endIndex, int requireCount)
+			protected bool ValidParam(string[] argParams, int startIndex, int endIndex, int requireCount = 0)
 			{
 				if (argParams != null)
 				{
 					if (startIndex >= 0 && startIndex < argParams.Length && 
 					    endIndex >= 0 && endIndex < argParams.Length)
 					{
-						return endIndex - startIndex + 1 >= requireCount;
+                        // NOTE only check when requireCount > 0
+                        if (requireCount > 0)
+                        {
+                            return endIndex - startIndex + 1 >= requireCount;
+                        }
+
+                        return true;
 					}
 				}
 				
@@ -392,7 +433,44 @@ namespace SimpleArgument
 			
 			Action<T1, T2, T3, T4> m_handler;
 		}
-		
+
+        class HandlerArray1<T1> : BaseHandler
+        {
+            public HandlerArray1(string name, Action<T1[]> handler)
+                : base(name)
+            {
+                m_handler = handler;
+            }
+
+            public override int GetParamCount()
+            {
+                // means variable param count
+                return -1;
+            }
+
+            public override void DoHandler(string[] argParams, int startIndex, int endIndex)
+            {
+                if (ValidParam(argParams, startIndex, endIndex))
+                {
+                    var paramCount = Math.Max(0, endIndex - startIndex + 1);
+                    var paramArray = new T1[paramCount];
+                    for (int i = 0; i < paramCount; ++i)
+                    {
+                        paramArray[i] = ConvertParam<T1>(argParams[startIndex]);
+                        ++startIndex;
+                    }
+
+                    m_handler(paramArray);
+                }
+                else
+                {
+                    Debug.Print("[SimpleArgument]Error to execute argument handler : " + m_name);
+                }
+            }
+
+            Action<T1[]> m_handler;
+        }
+
 		Dictionary<string, BaseHandler> m_argHandlers = new Dictionary<string, BaseHandler>();
 		StringBuilder m_strBuilder = new StringBuilder(128);
 		List<string> m_argBuffer = new List<string>(64);
