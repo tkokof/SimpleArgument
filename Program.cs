@@ -42,10 +42,43 @@ namespace SimpleArgument
 		
         static void OnArgParams1(int[] p1)
         {
-            Console.WriteLine("ArgParams1 handler {0}", p1.Length);
+            Console.Write("ArgParams1 handler array : ");
             for (int i = 0; i < p1.Length; ++i)
             {
                 Console.Write(p1[i]);
+                Console.Write(" ");
+            }
+            Console.WriteLine();
+        }
+
+        static void OnArgParams2(int p1, int[] p2)
+        {
+            Console.Write("ArgParams2 handler {0} array : ", p1);
+            for (int i = 0; i < p2.Length; ++i)
+            {
+                Console.Write(p2[i]);
+                Console.Write(" ");
+            }
+            Console.WriteLine();
+        }
+
+        static void OnArgParams3(int p1, string p2, int[] p3)
+        {
+            Console.Write("ArgParams3 handler {0} {1} array : ", p1, p2);
+            for (int i = 0; i < p3.Length; ++i)
+            {
+                Console.Write(p3[i]);
+                Console.Write(" ");
+            }
+            Console.WriteLine();
+        }
+
+        static void OnArgParams4(int p1, string p2, float p3, int[] p4)
+        {
+            Console.Write("ArgParams4 handler {0} {1} {2} array : ", p1, p2, p3);
+            for (int i = 0; i < p4.Length; ++i)
+            {
+                Console.Write(p4[i]);
                 Console.Write(" ");
             }
             Console.WriteLine();
@@ -105,6 +138,9 @@ namespace SimpleArgument
 			sa.Add<float, float, float>("-a3", OnArg3);
 			sa.Add<string, int, float, double>("-a4", OnArg4);
             sa.AddArray<int>("-ap1", OnArgParams1);
+            sa.AddArray<int, int>("-ap2", OnArgParams2);
+            sa.AddArray<int, string, int>("-ap3", OnArgParams3);
+            sa.AddArray<int, string, float, int>("-ap4", OnArgParams4);
 			
 			try
 			{
@@ -117,7 +153,7 @@ namespace SimpleArgument
 			
 			try
 			{
-                sa.Handle("-a0 -a1 123 -ap1 1 2 3 4 5 -a2 345 test2\"test2\"test2 -a3 13.6 14.7 177 -a4 test1 222 333 444");
+                sa.Handle("-a0 -a1 123 -ap1 1 2 3 4 5 -a2 345 test2\"test2\"test2 -a3 13.6 14.7 177 -a4 test1 222 333 444 -ap2 1 2 3 -ap3 1 2 3 4 5 -ap4 1 2 3 4 5 6 7 8");
 			}
 			catch (Exception exp)
 			{
